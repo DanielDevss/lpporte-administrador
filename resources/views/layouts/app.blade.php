@@ -1,3 +1,7 @@
+@props([
+    'path' => null,
+    'title' => null
+])
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="bg-body" data-bs-theme="dark">
 
@@ -25,9 +29,12 @@
 
     <article>
 
-        <x-layouts.navigation />
+        <x-layouts.navigation :path="$path" />
 
-        <main class="container">{{ $slot }}</main>
+        <main class="container my-4">
+            <h1>{{ $title ?? "Dashboard" }}</h1>
+            {{ $slot }}
+        </main>
 
     </article>
 
