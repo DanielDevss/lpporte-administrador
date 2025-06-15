@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('suscription_id')->nullable()->constrained()->cascadeOnUpdate()->nullOnDelete();
+            $table->boolean('suscription_active')->default(false);
+            $table->string('reference_code', 10);
             $table->timestamps();
         });
     }

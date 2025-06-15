@@ -13,6 +13,19 @@ return new class extends Migration
     {
         Schema::create('suscriptions', function (Blueprint $table) {
             $table->id();
+            $table->string('name', 100)->unique();
+            $table->string('amount', 25);
+            $table->boolean('free')->default(false);
+            $table->string('stripe_price_id')->unique();
+            $table->string('stripe_product_id')->unique();
+            $table->timestamps();
+        });
+
+        Schema::create('suscription_attributes', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('suscription_id')->constrained('suscriptions')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->integer('position')->nullable();
+            $table->string('text');
             $table->timestamps();
         });
     }
@@ -22,6 +35,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('suscription_attributes');
         Schema::dropIfExists('suscriptions');
     }
 };

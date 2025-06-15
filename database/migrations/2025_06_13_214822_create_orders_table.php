@@ -13,6 +13,14 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
+            $table->string('folio', 10)->unique();
+            $table->enum('status', ['pendiente', 'procesando', 'pagado', 'cancelado', 'error'])->default('pendiente');
+            $table->string('amount', 20);
+            $table->enum('sold_since', ['en linea', 'externa'])->default('en linea');
+            $table->string('tax', 20);
+            $table->string('stripe_payment_id');
+            $table->string('stripe_payment_method');
             $table->timestamps();
         });
     }
