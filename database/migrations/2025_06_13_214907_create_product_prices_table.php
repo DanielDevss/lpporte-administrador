@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('suscription_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+            $table->string('stripe_price_id')->unique();
             $table->string('amount', 20);
             $table->string('tax', 20);
             $table->timestamps();

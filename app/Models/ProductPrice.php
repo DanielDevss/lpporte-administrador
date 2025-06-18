@@ -6,5 +6,19 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProductPrice extends Model
 {
-    //
+    protected $fillable = [
+        'product_id',
+        'suscription_id',
+        'amount',
+        'tax',
+        'stripe_price_id'
+    ];
+
+    /**
+     * Relaciones con tablas
+     */
+
+    public function product () {
+        return $this->belongsTo(Product::class);
+    }
 }
