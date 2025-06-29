@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Filament\Admin\Resources;
+
 use App\Filament\Admin\Resources\SuscriptionResource\Pages;
 use App\Filament\Admin\Resources\SuscriptionResource\RelationManagers;
 use App\Models\Suscription;
@@ -16,43 +17,37 @@ class SuscriptionResource extends Resource
 {
     protected static ?string $model = Suscription::class;
     protected static ?string $navigationGroup = 'Ajustes';
+    protected static ?string $navigationLabel = 'Suscripciones';
     protected static ?string $modelLabel = 'suscripción';
     protected static ?string $pluralModelLabel = 'suscripciones';
-    
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
                     ->label('Nombre de la suscripción')
-                    ->placeholder('Escribe el nombre de la suscripción')
-                    ->unique('suscriptions', 'name', ignoreRecord: true)
-                    ->maxLength(100)
-                    ->required(),
+                    ->placeholder('Escribe un nombre de la suscripción')
+                    ->required()
+                    ->unique('suscriptions', 'name'),
                 Forms\Components\TextInput::make('amount')
-                    ->label(fn (callable $get) => $get('free')
-                        ? 'Anualidad GRATIS'
-                        : 'Precio de la anualidad')
-                    ->placeholder('Ingresa el precio de la anualidad')
-                    ->maxLength(25)
+                    ->label('Costo de la suscripción')
+                    ->placeholder('Ingresa el precio de está suscripción')
                     ->numeric()
-                    ->required(fn (callable $get) => !$get('free'))
-                    ->disabled(fn (callable $get) => $get('free'))
-                    ->dehydrated(fn (callable $get) => $get('free')),
+                    ->required()
+                    ->helperText('Agrega aquí el costo anual de esta membresía'),
                 Forms\Components\Checkbox::make('free')
-                    ->label('Suscripción gratuita')
-                    ->helperText('Marca esta casilla si la suscripción no tiene un costo')
-                    ->live(),
+                    ->label('Marcar si la suscripción es gratuita'),
                 Forms\Components\Repeater::make('attributes')
-                    ->label('Caracteristicas y beneficios')
+                    ->label('Caracteristicas de la suscripción')
                     ->columnSpanFull()
-                    ->grid(2)
-                    ->schema([
-                        Forms\Components\TextInput::make('text')
-                            ->hiddenLabel()
-                            ->placeholder('Escribe una caracteristica o beneficio')
-                            ->required()
-                    ])
+                    ->required()
+                    ->grid(3)
+                    ->addActionLabel('Agrega otra carácteristica')
+                    ->simple(Forms\Components\TextInput::make('attribute')
+                        ->hiddenLabel()
+                        ->placeholder('Escribe una caracteristica')
+                    )
             ]);
     }
 
@@ -60,12 +55,7 @@ class SuscriptionResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->label('Nombre')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('amount')
-                    ->label('Anualidad')
-                    ->numeric(),
+                //
             ])
             ->filters([
                 //

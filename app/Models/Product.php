@@ -37,6 +37,10 @@
             return $this->belongsToMany(Category::class, 'categories_has_products');
         }
 
+        public function images() {
+            return $this->belongsToMany(ProductImage::class);
+        }
+
         /**
          * Boot
          */

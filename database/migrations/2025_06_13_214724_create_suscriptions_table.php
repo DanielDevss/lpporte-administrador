@@ -18,14 +18,7 @@ return new class extends Migration
             $table->boolean('free')->default(false);
             $table->string('stripe_price_id')->unique();
             $table->string('stripe_product_id')->unique();
-            $table->timestamps();
-        });
-
-        Schema::create('suscription_attributes', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('suscription_id')->constrained('suscriptions')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->integer('position')->nullable();
-            $table->string('text');
+            $table->json('attributes')->nullable();
             $table->timestamps();
         });
     }

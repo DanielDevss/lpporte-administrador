@@ -23,7 +23,24 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-                //
+                Forms\Components\TextInput::make('name')
+                    ->label('Nombre completo')
+                    ->placeholder('Escribe el nombre del propietario')
+                    ->helperText('Propietario de la cuenta')
+                    ->required(),
+                Forms\Components\TextInput::make('email')
+                    ->label('Correo electrónico')
+                    ->placeholder('Escribe el correo electrónico del propietario')
+                    ->required()
+                    ->unique('users', 'email', ignoreRecord: true),
+                Forms\Components\TextInput::make('password')
+                    ->label('Escribe una contraseña')
+                    ->placeholder('Escribe una contraseña segura')
+                    ->password()
+                    ->required()
+                    ->minLength(8)
+                    ->maxLength(16)
+                    ->helperText('La contraseña debe tener minimo 8 carácteres y máximo 16')
             ]);
     }
 
@@ -31,7 +48,19 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Nombre')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('email')
+                    ->label('Correo electrónico'),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Creado el')
+                    ->dateTime('d/m/Y')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Editado el')
+                    ->dateTime('d/m/Y')
+                    ->sortable(),
             ])
             ->filters([
                 //

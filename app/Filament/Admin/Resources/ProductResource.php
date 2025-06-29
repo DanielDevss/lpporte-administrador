@@ -102,6 +102,26 @@ class ProductResource extends Resource
                             ]),
                         Forms\Components\Tabs\Tab::make('Imagenes extra')
                             ->icon('heroicon-m-photo')
+                            ->schema([
+                                Forms\Components\Repeater::make('images')
+                                    ->hiddenLabel()
+                                    ->grid(3)
+                                    ->addActionLabel('Agregar otra imagen')
+                                    ->schema([
+                                        Forms\Components\FileUpload::make('path')
+                                            ->label('Imagen')
+                                            ->image()
+                                            ->disk('public')
+                                            ->directory('products')
+                                            ->imageEditor()
+                                            ->required()
+                                            ->placeholder('Selecciona una imagen de tu galería o arrastrala hasta aquí.'),
+                                        Forms\Components\TextInput::make('alt')
+                                            ->label('Titulo de la imagen')
+                                            ->placeholder('Agrega un titulo a la imagen')
+                                            ->helperText('Recomendado para SEO')
+                                    ])
+                            ])
 
                     ])
                     ->columnSpanFull()

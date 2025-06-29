@@ -21,4 +21,21 @@ class ProductPrice extends Model
     public function product () {
         return $this->belongsTo(Product::class);
     }
+
+    /**
+     * Operaciones Boot
+     */
+    public static function boot () {
+        parent::booting();
+
+        static::creating(function ($price) {
+            $price->amount = $price->amount * 100;
+            $price->tax = $price->amount * .16;
+        });
+    }
+
+    /**
+     * Otras operaciones
+     */
+
 }
