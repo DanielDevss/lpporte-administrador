@@ -37,7 +37,8 @@ return [
 
     'stripe' => [
         'secret' => env('STRIPE_SECRET_KEY', null),
-        'public' => env('STRIPE_PUBLIC_KEY', null)
+        'public' => env('STRIPE_PUBLIC_KEY', null),
+        'currency' => env('STRIPE_CURRENCY', 'mxn'),
     ],
 
 ];

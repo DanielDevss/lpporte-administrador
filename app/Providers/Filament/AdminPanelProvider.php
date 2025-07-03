@@ -26,6 +26,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->id('admin')
             ->path('')
+            ->favicon('favicon.png')
             ->colors([
                 'primary' => Color::Green,
             ])

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('order_id')->constrained()->cascadeOnDelete();
             $table->foreignId('product_id')->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
+            $table->enum('plan', ['ninguno', 'basico', 'premium', 'mayoreo'])->default('ninguno');
             $table->timestamps();
         }); 
     }

@@ -2,12 +2,14 @@
 
 namespace App\Filament\Admin\Resources;
 
+use App\Enums\ProductStatusEnum;
 use App\Filament\Admin\Resources\ProductResource\Pages;
 use App\Filament\Admin\Resources\ProductResource\RelationManagers;
 use App\Models\Product;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -80,6 +82,47 @@ class ProductResource extends Resource
                                     ->required()
 
                             ]),
+                        Forms\Components\Tabs\Tab::make('Ajuste de precios')
+                            ->columns(2)
+                            ->icon('heroicon-m-currency-dollar')
+                            ->schema([
+                                Forms\Components\TextInput::make('price')
+                                    ->label('Precio unitario')
+                                    ->placeholder('Ingresa el precio')
+                                    ->helperText('El precio es la cantidad que una persona sin suscripción pagara.')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->formatStateUsing(fn ($state) => $state ? $state / 100 : 0)
+                                    ->dehydrateStateUsing(fn ($state) => $state * 100)
+                                    ->required(),
+                                Forms\Components\TextInput::make('price_wholesale')
+                                    ->label('Precio al por mayor')
+                                    ->placeholder('Ingresa el precio')
+                                    ->helperText('El precio al por mayor es el precio que se le cobrará a los clientes que compren más de 10 unidades.')
+                                    ->numeric() 
+                                    ->minValue(0)
+                                    ->required()
+                                    ->formatStateUsing(fn ($state) => $state ? $state / 100 : 0)
+                                    ->dehydrateStateUsing(fn ($state) => $state * 100)                                    ,
+                                Forms\Components\TextInput::make('price_basic_plan')
+                                    ->label('Precio de suscripción básica')
+                                    ->placeholder('Ingresa el precio')
+                                    ->helperText('Solo a miembros de suscripción básica se les cobrará este precio.')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->formatStateUsing(fn ($state) => $state ? $state / 100 : 0)
+                                    ->dehydrateStateUsing(fn ($state) => $state * 100)
+                                    ->required(),
+                                Forms\Components\TextInput::make('price_premium_plan')
+                                    ->label('Precio de suscripción premium')
+                                    ->placeholder('Ingresa el precio')
+                                    ->helperText('Solo a miembros de suscripción premium se les cobrará este precio.')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->formatStateUsing(fn ($state) => $state ? $state / 100 : 0)
+                                    ->dehydrateStateUsing(fn ($state) => $state * 100)
+                                    ->required(),
+                            ]),
                         Forms\Components\Tabs\Tab::make('Descripción')
                             ->columns(1)
                             ->icon('heroicon-m-bars-3-bottom-left')
@@ -114,7 +157,6 @@ class ProductResource extends Resource
                                             ->disk('public')
                                             ->directory('products')
                                             ->imageEditor()
-                                            ->required()
                                             ->placeholder('Selecciona una imagen de tu galería o arrastrala hasta aquí.'),
                                         Forms\Components\TextInput::make('alt')
                                             ->label('Titulo de la imagen')
@@ -132,15 +174,79 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\ImageColumn::make('thumb')
+                    ->label('Miniatura')
+                    ->disk('public')
+                    ->circular(),
                 Tables\Columns\TextColumn::make('title')
-                    ->label('titulo')
+                    ->label('Titulo')
+                    ->weight(FontWeight::Bold)
                     ->searchable()
+                    ->description(fn ($record) => $record?->brand?->name ?? 'Sin marca'),
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Visibilidad')
+                    ->badge()
+                    ->formatStateUsing(fn ($state) => match ($state) {
+                        ProductStatusEnum::ACTIVE->value => 'Activo',
+                        ProductStatusEnum::PAUSED->value => 'Pausado',
+                    })
+                    ->icon(fn ($state) => match ($state) {
+                        ProductStatusEnum::ACTIVE->value => 'heroicon-m-eye',
+                        ProductStatusEnum::PAUSED->value => 'heroicon-m-eye-slash',
+                    })
+                    ->color(fn ($state) => match ($state) {
+                        ProductStatusEnum::ACTIVE->value => 'success',
+                        ProductStatusEnum::PAUSED->value => 'warning',
+                    })
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('stock')
+                    ->label('Existencias')
+                    ->numeric()
+                    ->alignEnd()
+                    ->sortable(true),
+                Tables\Columns\TextColumn::make('price')
+                    ->label('Precio')
+                    ->money('MXN', divideBy: 100)
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('price_wholesale')
+                    ->label('Mayoreo')
+                    ->money('MXN', divideBy: 100)
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('price_basic_plan')
+                    ->label('Plan básico')
+                    ->money('MXN', divideBy: 100)
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('price_premium_plan')
+                    ->label('Plan premium')
+                    ->money('MXN', divideBy: 100)
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Creado el día')
+                    ->dateTime('d/m/Y')
+                    ->sortable()
+                    ->alignEnd()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Editado el día')
+                    ->dateTime('d/m/Y')
+                    ->sortable()
+                    ->alignEnd()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->searchable(),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make()
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

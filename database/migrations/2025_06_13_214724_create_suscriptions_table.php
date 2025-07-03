@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('stripe_price_id')->unique();
             $table->string('stripe_product_id')->unique();
             $table->json('attributes')->nullable();
+            $table->json('benefits')->nullable();
             $table->timestamps();
         });
     }

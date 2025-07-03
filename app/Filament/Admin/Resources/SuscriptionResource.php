@@ -25,29 +25,65 @@ class SuscriptionResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->label('Nombre de la suscripción')
-                    ->placeholder('Escribe un nombre de la suscripción')
-                    ->required()
-                    ->unique('suscriptions', 'name'),
-                Forms\Components\TextInput::make('amount')
-                    ->label('Costo de la suscripción')
-                    ->placeholder('Ingresa el precio de está suscripción')
-                    ->numeric()
-                    ->required()
-                    ->helperText('Agrega aquí el costo anual de esta membresía'),
-                Forms\Components\Checkbox::make('free')
-                    ->label('Marcar si la suscripción es gratuita'),
-                Forms\Components\Repeater::make('attributes')
-                    ->label('Caracteristicas de la suscripción')
+                Forms\Components\Tabs::make()
                     ->columnSpanFull()
-                    ->required()
-                    ->grid(3)
-                    ->addActionLabel('Agrega otra carácteristica')
-                    ->simple(Forms\Components\TextInput::make('attribute')
-                        ->hiddenLabel()
-                        ->placeholder('Escribe una caracteristica')
-                    )
+                    ->tabs([
+                        Forms\Components\Tabs\Tab::make('Información')
+                            ->icon('heroicon-o-information-circle')
+                            ->schema([
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Nombre de la suscripción')
+                                    ->placeholder('Escribe un nombre de la suscripción')
+                                    ->required()
+                                    ->unique('suscriptions', 'name', ignoreRecord:true),
+                                Forms\Components\TextInput::make('amount')
+                                    ->label('Costo de la suscripción')
+                                    ->placeholder('Ingresa el precio de está suscripción')
+                                    ->numeric()
+                                    ->suffix('MX')
+                                    ->prefix('$')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->formatStateUsing(fn ($state) => $state ? $state / 100 : 0)
+                                    ->dehydrateStateUsing(fn ($state) => $state * 100)                                    
+                                    ->required()
+                                    ->helperText('Agrega aquí el costo anual de esta suscripción'),
+                                Forms\Components\Checkbox::make('free')
+                                    ->label('Marcar si la suscripción es gratuita'),
+                            ]),
+                        Forms\Components\Tabs\Tab::make('Características')
+                            ->icon('heroicon-o-clipboard-document-list')
+                            ->schema([
+                                Forms\Components\Repeater::make('attributes')
+                                    ->label('Caracteristicas de la suscripción')
+                                    ->hiddenLabel()
+                                    ->columnSpanFull()
+                                    ->required()
+                                    ->grid(2)
+                                    ->addActionLabel('Agrega otra carácteristica')
+                                    ->simple(
+                                        Forms\Components\TextInput::make('attribute')
+                                            ->hiddenLabel()
+                                            ->placeholder('Escribe una caracteristica')
+                                    ),
+                            ]),
+                        Forms\Components\Tabs\Tab::make('Beneficios')
+                            ->icon('heroicon-o-gift')
+                            ->schema([
+                                Forms\Components\Repeater::make('benefits')
+                                    ->label('Beneficios de la suscripción')
+                                    ->hiddenLabel()
+                                    ->columnSpanFull()
+                                    ->required()
+                                    ->grid(2)
+                                    ->addActionLabel('Agrega otro beneficio')
+                                    ->simple(
+                                        Forms\Components\TextInput::make('attribute')
+                                            ->hiddenLabel()
+                                            ->placeholder('Escribe una caracteristica')
+                                    ),
+                                ]),
+                    ]),
             ]);
     }
 
@@ -55,13 +91,32 @@ class SuscriptionResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Suscripción')
+                    ->weight('bold')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('amount')
+                    ->label('Anualidad')
+                    ->money('MXN', 100, 'es_MX')
+                    ->alignEnd()
+                    ->sortable(),
+                Tables\Columns\IconColumn::make('free')
+                    ->label('Es gratuita?')
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->alignCenter()
+                    ->boolean(),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Ultima actualización')
+                    ->since()
+                    ->sortable(),
             ])
-            ->filters([
-                //
-            ])
+            ->filters([])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make(),
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

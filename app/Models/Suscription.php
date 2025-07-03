@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Services\StripeService;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Suscription extends Model
 {
@@ -14,12 +16,15 @@ class Suscription extends Model
         'amount',
         'free',
         'attributes',
+        'benefits',
         'stripe_price_id',
         'stripe_product_id'
     ];
 
     protected $casts = [
-        'attributes' => 'array'
+        'attributes' => 'array',
+        'benefits' => 'array',
+        'free' => 'boolean',
     ];
 
     /**
@@ -36,14 +41,27 @@ class Suscription extends Model
     public static function boot() {
         parent::boot();
         
-        static::creating(function () {
+        static::creating(function ($model) {
             // TODO: Crear stripe price y product id
-
+            $stripe = new StripeService();
+            $stripeProduct = $stripe->createProduct([
+                'name' => $model->name,
+            ]);
+            $stripePrice = $stripe->createPrice([
+                'unit_amount' => $model->amount,
+                'currency' => config('services.stripe.currency'),
+                'product' => $stripeProduct->id,
+                'recurring' => [
+                    'interval' => 'year',
+                    'interval_count' => 1,
+                    'usage_type' => 'licensed',
+                ],
+            ]);
+            $model->stripe_product_id = $stripeProduct->id;
+            $model->stripe_price_id = $stripePrice->id;
         });
 
-        static::updating(function () {
-            // TODO: Actualizar stripe price id en caso de que este cambie
-
+        static::updating(function ($data) {
         });
     }
 }

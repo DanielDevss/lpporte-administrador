@@ -30,5 +30,9 @@ class StripeService {
     public function createPrice(array $options):Price {
         return Price::create($options);
     }
+
+    public function updatePrice (array $options, string $price_id) {
+        return Price::update($price_id, $options);
+    }
 }
 

@@ -5,6 +5,7 @@
     use App\Services\StripeService;
     use Illuminate\Database\Eloquent\Model;
     use Illuminate\Support\Facades\Storage;
+    use Illuminate\Support\Str;
 
     class Product extends Model
     {
@@ -17,7 +18,19 @@
             'thumb',
             'stock',
             'status',
-            'stripe_product_id'
+            'stripe_product_id',
+            'price',
+            'price_wholesale',
+            'price_basic_plan',
+            'price_premium_plan',
+            'stripe_price_id',
+            'stripe_price_wholesale_id',
+            'stripe_price_basic_plan_id',
+            'stripe_price_premium_plan_id',
+        ];
+
+        protected $casts = [
+            'stock' => 'integer',
         ];
 
         public function getRouteKeyName()
@@ -49,24 +62,49 @@
         {
             parent::boot();
 
-            static::creating(function ($model) {
+            static::creating(function ($data) {
 
                 $stripe = new StripeService();
 
-                $thumb = config('app.url') . $model->thumb;
+                $thumb = config('app.url') . $data->thumb;
 
-                $stripe->createProduct([
-                    'name' => $model->name,
-                    'description' => $model->description_short,
+                $data->slug = Str::slug($data->title) . '-' . Str::random(4);
+
+                $stripeProductOptions = [
+                    'name' => $data->title,
+                    'description' => $data->description_short ?? null,
                     'images' => [$thumb]
-                ]);
+                ];
 
-                $model->stripe_product_id = null;
+                if(config('app.debug')) {
+                    $stripeProductOptions['images'] = [];
+                }
+
+                $stripeProduct = $stripe->createProduct($stripeProductOptions);
+                $data->stripe_product_id = $stripeProduct->id;
+
+                $prices = ['price', 'price_wholesale', 'price_basic_plan', 'price_premium_plan'];
+
+                foreach ($prices as $price) {
+                    if ($data->$price > 0) {
+                        $stripePrice = $stripe->createPrice([
+                            'unit_amount' => $data->$price,
+                            'currency' => config('services.stripe.currency'),
+                            'product' => $stripeProduct->id,
+                        ]);
+
+                        $data->{'stripe_' . $price . '_id'} = $stripePrice->id;
+                    }
+                }
+
             });
 
-            static::updating(function ($model) {
-                if ($model->isDirty('thumb')) {
-                    $model->deleteImage();
+            static::updating(function ($data) {
+                // Actualizar el precio del producto
+
+                // Actualizar la miniatura
+                if ($data->isDirty('thumb')) {
+                    $this->deleteImage();
                 }
             });
 
