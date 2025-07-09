@@ -3,7 +3,8 @@
     namespace App\Models;
 
     use App\Services\StripeService;
-    use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
     use Illuminate\Support\Facades\Storage;
     use Illuminate\Support\Str;
 
@@ -39,6 +40,18 @@
         }
 
         /**
+         * Scopes
+         */
+
+        public function scopePublics (Builder $query) {
+            return $query->where('status', 'activo');
+        }
+
+        public function scopeOffPublics (Builder $query) {
+            return $query->where('status', 'pausado');
+        }
+
+        /**
          * Relaciones
          */
 
@@ -51,7 +64,7 @@
         }
 
         public function images() {
-            return $this->belongsToMany(ProductImage::class);
+            return $this->belongsTo(ProductImage::class);
         }
 
         /**
@@ -125,5 +138,48 @@
             if ($storage->exists($thumb_path)) {
                 $storage->delete($thumb_path);
             }
+        }
+
+        public function formatApiList () {
+            return [
+                'id' => $this->id,
+                'slug' => $this->slug,
+                'title' => $this->title,
+                'stock' => $this->stock,
+                'cover' => config('app.url') . '/storage/' . $this->thumb,
+                'price' => $this->price / 100,
+                'wholesale_price' => $this->price_wholesale / 100,
+                'price_basic_plan' => $this->price_basic_plan / 100,
+                'price_premium_plan' => $this->price_premium_plan / 100,
+                'detail' => config('app.url') . '/api/products/' . $this->id,
+            ];
+        }
+
+        public function formatApiDetail() {
+            $images = [[
+                'alt' => $this->title, 
+                'src' => config('app.url') . '/storage/' . $this->thumb
+            ]];
+
+            $othersImages = $this->images ? $this->images->map(fn($img) => [
+                    'alt' => $img->alt ?? $this->title,
+                    'src' => config('app.url') . '/storage/' . $img->src
+                ]) : [];
+
+            $images = array_merge($images, $othersImages);
+
+            return [
+                'id' => $this->id,
+                'slug' => $this->slug,
+                'title' => $this->title,
+                'description_short' => $this->description_short,
+                'description' => $this->description,
+                'stock' => $this->stock,
+                'price' => $this->price / 100,
+                'price_wholesale' => $this->price_wholesale / 100,
+                'price_basic_plan' => $this->price_basic_plan / 100,
+                'price_premium_plan' => $this->price_premium_plan / 100,
+                'images' => $images
+            ];
         }
     }

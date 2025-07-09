@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Services\StripeService;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 class Suscription extends Model
 {
@@ -63,5 +62,18 @@ class Suscription extends Model
 
         static::updating(function ($data) {
         });
+    }
+
+    // Otras funciones
+
+    public function formatApiList () {
+        $attrs = $this->getAttributes()['attributes'];
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'amount'=> $this->amount / 100,
+            'benefits' => $this->benefits ?? [],
+            'attributes' => $attrs ? json_decode($attrs, true) : []
+        ];
     }
 }
