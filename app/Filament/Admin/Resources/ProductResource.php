@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources;
 use App\Enums\ProductStatusEnum;
 use App\Filament\Admin\Resources\ProductResource\Pages;
 use App\Filament\Admin\Resources\ProductResource\RelationManagers;
+use App\Filament\Admin\Resources\ProductResource\RelationManagers\ImagesRelationManager;
 use App\Models\Product;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -143,28 +144,6 @@ class ProductResource extends Resource
                                     ])
 
                             ]),
-                        Forms\Components\Tabs\Tab::make('Imagenes extra')
-                            ->icon('heroicon-m-photo')
-                            ->schema([
-                                Forms\Components\Repeater::make('images')
-                                    ->hiddenLabel()
-                                    ->grid(3)
-                                    ->addActionLabel('Agregar otra imagen')
-                                    ->schema([
-                                        Forms\Components\FileUpload::make('path')
-                                            ->label('Imagen')
-                                            ->image()
-                                            ->disk('public')
-                                            ->directory('products')
-                                            ->imageEditor()
-                                            ->placeholder('Selecciona una imagen de tu galería o arrastrala hasta aquí.'),
-                                        Forms\Components\TextInput::make('alt')
-                                            ->label('Titulo de la imagen')
-                                            ->placeholder('Agrega un titulo a la imagen')
-                                            ->helperText('Recomendado para SEO')
-                                    ])
-                            ])
-
                     ])
                     ->columnSpanFull()
             ]);
@@ -258,7 +237,7 @@ class ProductResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            ImagesRelationManager::class
         ];
     }
 

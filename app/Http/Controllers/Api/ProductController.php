@@ -25,12 +25,12 @@ class ProductController extends Controller
         return $products ?? [];
     }
 
-    public function show(string $id) {
+    public function show(string $slug) {
 
         $product = Product::with('images')
             ->publics()
-            ->findOrFail($id)
-            ?->formatApiDetail();
+            ->where('slug', $slug)
+            ->firstOrFail()?->formatApiDetail();
 
         return $product;
     }
