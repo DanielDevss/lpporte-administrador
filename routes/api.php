@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AccountController;
+use App\Http\Controllers\Api\AddressController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\OrderController;
 use Illuminate\Support\Facades\Route;
@@ -28,9 +29,21 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/profile', [AccountController::class, 'show']);
 
+    // Direcciones
+
+    Route::get('/addresses', [AddressController::class, 'index']);
+
+    Route::post('/addresses', [AddressController::class, 'store']);
+
+    Route::put('/addresses/{id}', [AddressController::class, 'update']);
+
+    Route::delete('/addresses/{id}', [AddressController::class, 'delete']);
+
     // Rutas de compras
 
     Route::get('/orders', [OrderController::class, 'index']);
+
+    Route::post('/orders', [OrderController::class, 'store']);
 
 });
 

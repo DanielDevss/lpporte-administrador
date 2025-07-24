@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('cp', 5);
             $table->string('state', 100);
             $table->string('col', 125);
+            $table->string('city', 125);
             $table->string('street', 155);
             $table->string('no_ext', 10)->nullable();
             $table->string('no_int', 10)->nullable();

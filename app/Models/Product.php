@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Services\StripeService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -323,6 +322,26 @@ class Product extends Model
             'price_premium_plan' => $this->price_premium_plan / 100,
             'images' => $images
         ];
+    }
+
+    public function getCustomerPrice ($suscriptionId, $totalQuantityProducts = 1) {
+        // $totalQuantityProducts es la suma de todos los quantity de los productos del carrito
+        if($suscriptionId > 1) {
+            $prices = [
+                2 => "price_basic_plan",
+                3 => "price_premium_plan",
+            ];
+            return [
+                "amount" => $this->$prices[$suscriptionId],
+                "price_id" => $this->$prices[$suscriptionId] . "_id"
+            ];
+        }else{
+            $isWholesale = $totalQuantityProducts >= 10;
+            return [
+                "amount" =>  $isWholesale ? $this->price_wholesale : $this->price,
+                "price_id" =>  $isWholesale ? $this->price_wholesale_id : $this->price_id,
+            ];
+        }
     }
 
 }

@@ -11,10 +11,6 @@ class StripeService {
         Stripe::setApiKey(config('services.stripe.secret'));
     }
 
-    public function createCheckoutSession (array $options): Session {
-        return Session::create($options);
-    }
-
     /**
      * Productos
      */
@@ -49,6 +45,10 @@ class StripeService {
 
     public function listPrices(array $options = []) {
         return Price::all($options);
+    }
+
+    public function createCheckout(array $options = []): Session {
+        return Session::create($options);
     }
 }
 
