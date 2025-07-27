@@ -20,14 +20,16 @@ class OrderStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "products" => ["required", "array", "min:1"],
-            "products.*.id" => ["required", "numeric", "exists:products,id"],
-            "products.*.quantity" => ["required", "numeric", "min:1"]
+            "suscription" => ["required_without", "numeric", "exists:suscriptions,id"],
+            "products" => ["required_without", "array", "min:1"],
+            "products.*.id" => ["required_with", "numeric", "exists:products,id"],
+            "products.*.quantity" => ["required_with", "numeric", "min:1"],
         ];
     }
 
     public function attributes(){
         return [
+            'suscription' => 'suscripción',
             'products' => 'productos',
             'products.*' => 'producto',
             'products.*.id' => 'id del producto',

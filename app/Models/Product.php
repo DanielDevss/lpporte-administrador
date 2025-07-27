@@ -324,24 +324,25 @@ class Product extends Model
         ];
     }
 
-    public function getCustomerPrice ($suscriptionId, $totalQuantityProducts = 1) {
-        // $totalQuantityProducts es la suma de todos los quantity de los productos del carrito
-        if($suscriptionId > 1) {
-            $prices = [
-                2 => "price_basic_plan",
-                3 => "price_premium_plan",
-            ];
-            return [
-                "amount" => $this->$prices[$suscriptionId],
-                "price_id" => $this->$prices[$suscriptionId] . "_id"
-            ];
-        }else{
-            $isWholesale = $totalQuantityProducts >= 10;
-            return [
-                "amount" =>  $isWholesale ? $this->price_wholesale : $this->price,
-                "price_id" =>  $isWholesale ? $this->price_wholesale_id : $this->price_id,
-            ];
-        }
-    }
+    public function getCustomerPriceId($suscriptionId, $totalQuantityProducts = 1)
+    {
+        $stripePriceId = null;
 
+        switch($suscriptionId) {
+            case 1:
+                $stripePriceId = $totalQuantityProducts >= 10 
+                    ? $this->stripe_price_wholesale_id 
+                    : $this->stripe_price_id;
+                break;
+            case 2: 
+                $stripePriceId = $this->stripe_price_basic_plan_id;
+                break;
+            case 3: 
+                $stripePriceId = $this->stripe_price_premium_plan_id;
+                break;
+        }
+
+        return $stripePriceId;
+    }
+        
 }
