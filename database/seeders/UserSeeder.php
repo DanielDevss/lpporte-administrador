@@ -14,15 +14,29 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        $isProduction = config('app.env') == "production";
+        $email = $isProduction ? 'admin@lpporte.com' : 'admin@example.com';
+        $password = $isProduction 
+            ? Hash::make('lpporte.2025') 
+            : Hash::make('12345678');
+
         User::updateOrCreate(
             [
-                'email' => 'admin@example.com'
+                'email' => $email
             ],
             [
-                "email" => "admin@example.com",
-                "password" => Hash::make("12345678"),
-                "name" => "Administrador general"
+                "email" => $email,
+                "password" => $$password,
+                "name" => "Luis Angel Pineda"
             ]
         );
+
+        if($isProduction) {
+            User::updateOrCreate([
+                'email' => 'luisdaniel.dlr.380@gmail.com',
+                'password' => Hash::make('Dan.2001'),
+                'name' => 'Luis Daniel de la Rosa'
+            ]);
+        }
     }
 }
