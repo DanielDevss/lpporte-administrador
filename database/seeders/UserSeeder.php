@@ -26,7 +26,7 @@ class UserSeeder extends Seeder
             ],
             [
                 "email" => $email,
-                "password" => $$password,
+                "password" => $password,
                 "name" => "Luis Angel Pineda"
             ]
         );
