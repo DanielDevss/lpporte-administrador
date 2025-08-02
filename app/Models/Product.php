@@ -42,6 +42,16 @@ class Product extends Model
         return 'slug';
     }
 
+    public function getCurrentPriceByPlan ($plan) {
+        $cases = [
+            'ninguno' => $this->price,
+            'mayoreo' => $this->price_wholesale,
+            'basico' => $this->price_basic_plan,
+            'premium' => $this->price_premium_plan,
+        ];
+        return $cases[$plan];
+    }
+
     /**
      * Scopes
      */
@@ -68,6 +78,8 @@ class Product extends Model
         )
             ->withPivot([
                 'plan',
+                'amount',
+                'quantity'
             ]);
     }
 

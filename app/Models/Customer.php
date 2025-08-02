@@ -47,4 +47,14 @@ class Customer extends Model
         return $this->hasMany(Address::class, 'customer_id');
     }
 
+    public function currentPlan () {
+        $cases = [
+            1 => 'ninguno',
+            2 => 'basico',
+            3 => 'premium'
+        ];
+
+        return $cases[$this->suscription_id];
+    }
+
 }

@@ -1,7 +1,9 @@
 <?php
 namespace App\Services;
 
+use Exception;
 use Stripe\Checkout\Session;
+use Stripe\PaymentIntent;
 use Stripe\Price;
 use Stripe\Product;
 use Stripe\Stripe;
@@ -49,6 +51,20 @@ class StripeService {
 
     public function createCheckout(array $options = []): Session {
         return Session::create($options);
+    }
+
+    public function findSession(string $id) {
+        if(!$id) {
+            throw new Exception('No existe el session_id');
+        }
+        return Session::retrieve($id);
+    }
+
+    public function findPaymentIntent (string $id) {
+        if(!$id) {
+            throw new Exception('No existe el payment_intent_id');
+        }
+        return PaymentIntent::retrieve($id);
     }
 }
 
