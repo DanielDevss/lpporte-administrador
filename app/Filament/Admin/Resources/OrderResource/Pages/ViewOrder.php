@@ -84,7 +84,30 @@ class ViewOrder extends ViewRecord
                             ->inlineLabel()
                     ])
                     ->columnSpanFull()
-                    ->grid(3),
+                    ->grid(3)
+                    ->visible(fn($record) => $record->products->count()),
+                RepeatableEntry::make('suscriptions')
+                    ->label('Suscripción')
+                    ->hiddenLabel()
+                    ->visible(fn($record) => $record->suscriptions->count())
+                    ->columnSpanFull()
+                    ->grid([
+                        'xl' => 2
+                    ])
+                    ->schema([
+                        TextEntry::make('name')
+                            ->label('Plan')
+                            ->icon('heroicon-o-star')
+                            ->inlineLabel(),
+                        TextEntry::make('created_at')
+                            ->label('Fecha de pago')
+                            ->icon('heroicon-o-calendar')
+                            ->inlineLabel(),
+                        TextEntry::make('created_at')
+                            ->label('Fecha de finalización')
+                            ->icon('heroicon-o-calendar')
+                            ->inlineLabel()
+                    ])
             ]);
     }
 

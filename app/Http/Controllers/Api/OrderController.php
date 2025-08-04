@@ -21,9 +21,24 @@ class OrderController extends Controller
         try {
             
             $customer = $request->user()->customer;
-            $orders = Order::where('customer_id', $customer->id)->get();
+            $orders = Order::with('products', 'suscriptions')->where('customer_id', $customer->id)->get()?->map(fn ($order) => [
+                'id' => $order->id,
+                'folio' => $order->folio,
+                'amount' => $order->amount,
+                'created_at' => $order->created_at->format('d/m/Y h:i a'),
+                'status' => $order->status,
+                'products' => $order->products->map(fn ($product) => [
+                    'id' => $product->id,
+                    'slug' => $product->slug,
+                    'title' => $product->title,
+                    'amount' => $product->pivot->amount,
+                    'quantity' => ($product->pivot->quantity ?? 0),
+                ]),
+                'suscription' => $order->suscriptions ? $order->suscriptions()->select('name')->first()?->name : null,
+                'download' => route('download.ticket', ['folio' => $order->folio])
+            ]);
 
-            return response()->json($orders);
+            return response()->json($orders ?? []);
         }
         catch (\Exception $e) {
 
@@ -46,17 +61,19 @@ class OrderController extends Controller
             $user = $request->user();
             $session = $this->createCheckout($request, $folio);
             $products = [];
-            $totalQuantity = $this->calcTotalQuantity($request->products);
             $plan = $user->customer->currentPlan();
-
-            foreach($request->products as $product) {
-                $currentPlan = $plan === "ninguno" && $totalQuantity >= 10 ? "mayoreo" : $plan;
-                $modelProduct = Product::find($product['id']);
-                $products[] = [
-                    'product_id' => $modelProduct->id,
-                    'plan' => $currentPlan,
-                    'amount' => $modelProduct->getCurrentPriceByPlan($currentPlan)
-                ];
+            
+            if(!$request->has('suscription')){
+                $totalQuantity = $this->calcTotalQuantity($request->products);
+                foreach($request->products as $product) {
+                    $currentPlan = $plan === "ninguno" && $totalQuantity >= 10 ? "mayoreo" : $plan;
+                    $modelProduct = Product::find($product['id']);
+                    $products[] = [
+                        'product_id' => $modelProduct->id,
+                        'plan' => $currentPlan,
+                        'amount' => $modelProduct->getCurrentPriceByPlan($currentPlan)
+                    ];
+                }
             }
 
             $order = Order::create([
@@ -67,7 +84,12 @@ class OrderController extends Controller
                 'stripe_session_id' => $session->id,
             ]);
 
-            $order->products()->sync($products);
+            if(!empty($products)) {
+                $order->products()->sync($products);
+            }
+            if($request->has('suscription')) {
+                $order->suscriptions()->sync([$request->suscription]);
+            }
 
             DB::commit();
 

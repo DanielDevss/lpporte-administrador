@@ -17,11 +17,4 @@ class ListOrders extends ListRecords
             // Actions\CreateAction::make(),
         ];
     }
-
-    public function getTabs(): array {
-        return [
-            'Todos' => Tab::make()->icon('heroicon-o-queue-list'),
-            'Completados' => Tab::make()->icon('heroicon-o-check-circle'),
-        ];
-    }
 }

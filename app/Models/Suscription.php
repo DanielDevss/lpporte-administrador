@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Services\StripeService;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class Suscription extends Model
 {
@@ -50,17 +51,38 @@ class Suscription extends Model
                 'unit_amount' => $model->amount,
                 'currency' => config('services.stripe.currency'),
                 'product' => $stripeProduct->id,
-                'recurring' => [
-                    'interval' => 'year',
-                    'interval_count' => 1,
-                    'usage_type' => 'licensed',
-                ],
             ]);
             $model->stripe_product_id = $stripeProduct->id;
             $model->stripe_price_id = $stripePrice->id;
         });
 
-        static::updating(function ($data) {
+        static::updating(function ($model) {
+            // Si el precio cambió, actualizar en Stripe
+            if ($model->isDirty('amount')) {
+                $stripe = new StripeService();
+
+                // Crear nuevo precio
+                $stripePrice = $stripe->createPrice([
+                    'unit_amount' => $model->amount,
+                    'currency' => config('services.stripe.currency'),
+                    'product' => $model->stripe_product_id,
+                ]);
+                
+                $model->stripe_price_id = $stripePrice->id;
+            }
+            
+            // Si el nombre cambió, actualizar el producto en Stripe
+            if ($model->isDirty('name')) {
+                $stripe = new StripeService();
+                
+                try {
+                    $stripe->updateProduct([
+                        'name' => $model->name,
+                    ], $model->stripe_product_id);
+                } catch (\Exception $e) {
+                    Log::warning("Error al actualizar producto en Stripe: {$model->stripe_product_id}", ['error' => $e->getMessage()]);
+                }
+            }
         });
     }
 

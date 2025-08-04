@@ -30,6 +30,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/profile', [AccountController::class, 'show']);
 
+    Route::put('/profile', [AccountController::class, 'update']);
+
+    Route::put('/change-password', [AccountController::class, 'changePassword']);
+
     // Direcciones
 
     Route::get('/addresses', [AddressController::class, 'index']);

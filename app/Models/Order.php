@@ -42,4 +42,8 @@ class Order extends Model
             ->withPivot(['plan', 'amount', 'quantity']);
     }
 
+    public function suscriptions () {
+        return $this->belongsToMany(Suscription::class, 'orders_has_suscriptions');
+    }
+
 }
