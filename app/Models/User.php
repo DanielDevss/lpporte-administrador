@@ -60,6 +60,7 @@ class User extends Authenticatable implements FilamentUser
         if ($panel->getId() === 'admin') {
             return $this->customer()->doesntExist();
         }
+
         return true;
     }
 }
