@@ -4,6 +4,10 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @mixin \Illuminate\Http\Request
+ */
+
 class OrderStoreRequest extends FormRequest
 {
     /**
@@ -20,14 +24,15 @@ class OrderStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "suscription" => ["required_without", "numeric", "exists:suscriptions,id"],
-            "products" => ["required_without", "array", "min:1"],
+            "suscription" => ["required_without:products", "numeric", "exists:suscriptions,id"],
+            "products" => ["required_without:suscription", "array", "min:1"],
             "products.*.id" => ["required_with", "numeric", "exists:products,id"],
             "products.*.quantity" => ["required_with", "numeric", "min:1"],
         ];
     }
 
-    public function attributes(){
+    public function attributes()
+    {
         return [
             'suscription' => 'suscripción',
             'products' => 'productos',

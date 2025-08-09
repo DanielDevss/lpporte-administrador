@@ -39,6 +39,7 @@ return [
         'secret' => env('STRIPE_SECRET_KEY', null),
         'public' => env('STRIPE_PUBLIC_KEY', null),
         'currency' => env('STRIPE_CURRENCY', 'mxn'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET')
     ],
 
 ];

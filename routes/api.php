@@ -11,10 +11,11 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\DistribuitorController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\SuscriptionController;
+use App\Http\Controllers\api\WebhookOrderController;
 
 // Autenticacion
 
-Route::post('/login', [AuthController::class, 'signIn' ]);
+Route::post('/login', [AuthController::class, 'signIn']);
 
 Route::post('/account', [AuthController::class, 'signUp']);
 
@@ -38,9 +39,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/addresses', [AddressController::class, 'index']);
 
+    Route::get('/addresses/{id}', [AddressController::class, 'show']);
+
     Route::post('/addresses', [AddressController::class, 'store']);
 
-    Route::put('/addresses/{id}', [AddressController::class, 'update']);
+    Route::put(
+        '/addresses/{id}',
+        [AddressController::class, 'update']
+    );
+    Route::put('/addresses/{id}/main', [AddressController::class, 'setMain']);
 
     Route::delete('/addresses/{id}', [AddressController::class, 'delete']);
 
@@ -56,8 +63,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::prefix('/order')->group(function () {
 
-    Route::post('/{folio}/succeded', [OrderController::class, 'succeded']);
-    
+    Route::post('/{folio}/validate', [OrderController::class, 'validateOrder']);
+
 });
 
 // Catalogos
@@ -75,3 +82,5 @@ Route::get('/products/{slug}', [ProductController::class, 'show']);
 Route::get('/{category_id}/products', [ProductController::class, 'byCategory']);
 
 Route::get('/distribuitors', [DistribuitorController::class, 'index']);
+
+// Route::post('/stripe/webhook', action: [WebhookOrderController::class, 'handleWebhook']);

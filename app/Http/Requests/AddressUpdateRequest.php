@@ -36,7 +36,6 @@ class AddressUpdateRequest extends FormRequest
             'street_ref_2' => ['nullable', 'string', 'max:125', 'min:3'],
             'street_ref_3' => ['nullable', 'string', 'max:125', 'min:3'],
             'street_ref_4' => ['nullable', 'string', 'max:125', 'min:3'],
-            'main' => ['nullable','boolean']
         ];
     }
 }
