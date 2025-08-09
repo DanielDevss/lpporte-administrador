@@ -35,7 +35,7 @@ class SuscriptionResource extends Resource
                                     ->label('Nombre de la suscripción')
                                     ->placeholder('Escribe un nombre de la suscripción')
                                     ->required()
-                                    ->unique('suscriptions', 'name', ignoreRecord:true),
+                                    ->unique('suscriptions', 'name', ignoreRecord: true),
                                 Forms\Components\TextInput::make('amount')
                                     ->label('Costo de la suscripción')
                                     ->placeholder('Ingresa el precio de está suscripción')
@@ -44,8 +44,8 @@ class SuscriptionResource extends Resource
                                     ->prefix('$')
                                     ->numeric()
                                     ->minValue(0)
-                                    ->formatStateUsing(fn ($state) => $state ? $state / 100 : 0)
-                                    ->dehydrateStateUsing(fn ($state) => $state * 100)                                    
+                                    ->formatStateUsing(fn($state) => $state ? $state / 100 : 0)
+                                    ->dehydrateStateUsing(fn($state) => $state * 100)
                                     ->required()
                                     ->helperText('Agrega aquí el costo anual de esta suscripción'),
                                 Forms\Components\Checkbox::make('free')
@@ -82,7 +82,7 @@ class SuscriptionResource extends Resource
                                             ->hiddenLabel()
                                             ->placeholder('Escribe una caracteristica')
                                     ),
-                                ]),
+                            ]),
                     ]),
             ]);
     }
@@ -115,12 +115,10 @@ class SuscriptionResource extends Resource
             ->actions([
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make(),
                 ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }
