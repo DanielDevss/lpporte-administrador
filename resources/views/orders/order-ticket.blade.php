@@ -1,5 +1,5 @@
 @php
-    use App\Enums\PaymentIntentStatusEnum;
+    use App\Enums\OrderStatusEnum;
 @endphp
 
 <!DOCTYPE html>
@@ -290,7 +290,7 @@
                         <div class="info-label">Estado</div>
                         <div class="info-value">
                             <span>
-                                {{ PaymentIntentStatusEnum::from($order->status)->label() }}
+                                {{ OrderStatusEnum::from($order->status)->label() }}
                             </span>
                         </div>
                     </div>

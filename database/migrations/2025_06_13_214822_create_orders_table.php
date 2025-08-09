@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\PaymentIntentStatusEnum;
+use App\Enums\OrderStatusEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
             $table->string('folio', 10)->unique();
-            $table->enum('status', array_column(PaymentIntentStatusEnum::cases(), 'value'))->nullable();
+            $table->enum('status', array_column(OrderStatusEnum::cases(), 'value'))->nullable();
             $table->string('amount', 20);
             $table->enum('sold_since', ['en linea', 'externa'])->default('en linea');
             $table->string('tax', 20);

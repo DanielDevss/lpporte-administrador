@@ -2,7 +2,7 @@
 
 namespace App\Filament\Admin\Widgets;
 
-use App\Enums\PaymentIntentStatusEnum;
+use App\Enums\OrderStatusEnum;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
@@ -35,9 +35,9 @@ class SummaryStats extends BaseWidget
                 value: Order::where(
                     'status',
                     '!=',
-                    PaymentIntentStatusEnum::Succeeded->value
+                    OrderStatusEnum::Succeeded->value
                 )
-                    ->where('status', '!=', PaymentIntentStatusEnum::Canceled->value)
+                    ->where('status', '!=', OrderStatusEnum::Canceled->value)
                     ->count()
             )
                 ->icon('heroicon-m-clock')

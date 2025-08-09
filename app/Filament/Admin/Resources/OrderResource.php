@@ -2,7 +2,7 @@
 
 namespace App\Filament\Admin\Resources;
 
-use App\Enums\PaymentIntentStatusEnum;
+use App\Enums\OrderStatusEnum;
 use App\Filament\Admin\Resources\OrderResource\Pages;
 use App\Filament\Admin\Resources\OrderResource\RelationManagers;
 use App\Filament\Admin\Resources\OrderResource\Actions;
@@ -43,9 +43,9 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Estado')
                     ->badge()
-                    ->getStateUsing(fn($record) => PaymentIntentStatusEnum::from($record->status)->label())
-                    ->color(fn($record) => PaymentIntentStatusEnum::from($record->status)->color())
-                    ->icon(fn($record) => PaymentIntentStatusEnum::from($record->status)->icon()),
+                    ->getStateUsing(fn($record) => OrderStatusEnum::from($record->status)->label())
+                    ->color(fn($record) => OrderStatusEnum::from($record->status)->color())
+                    ->icon(fn($record) => OrderStatusEnum::from($record->status)->icon()),
                 Tables\Columns\TextColumn::make('amount')
                     ->label('Monto')
                     ->getStateUsing(fn($record) => $record->amount / 100)

@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum PaymentIntentStatusEnum: string
+enum OrderStatusEnum: string
 {
     case Open = 'open';
     case Canceled = 'canceled';
@@ -12,6 +12,7 @@ enum PaymentIntentStatusEnum: string
     case RequiresConfirmation = 'requires_confirmation';
     case RequiresPaymentMethod = 'requires_payment_method';
     case Succeeded = 'succeeded';
+    case Denied = 'denied';
 
     public function label(): string
     {
@@ -24,6 +25,7 @@ enum PaymentIntentStatusEnum: string
             self::RequiresConfirmation => __('payment_intents.requires_confirmation'),
             self::RequiresPaymentMethod => __('payment_intents.requires_payment_method'),
             self::Succeeded => __('payment_intents.succeeded'),
+            self::Denied => __('payment_intents.denied')
         };
     }
 
@@ -33,11 +35,12 @@ enum PaymentIntentStatusEnum: string
             self::Open => 'gray',
             self::Canceled => 'danger',
             self::Processing => 'warning',
-            self::RequiresAction,
-            self::RequiresCapture,
-            self::RequiresConfirmation,
-            self::RequiresPaymentMethod => 'gray',
+            self::RequiresAction => 'warning',
+            self::RequiresCapture => 'warning',
+            self::RequiresConfirmation => 'warning',
+            self::RequiresPaymentMethod => 'warning',
             self::Succeeded => 'success',
+            self::Denied => 'danger',
         };
     }
 
@@ -52,6 +55,7 @@ enum PaymentIntentStatusEnum: string
             self::RequiresConfirmation => 'heroicon-o-check-circle',
             self::RequiresPaymentMethod => 'heroicon-o-credit-card',
             self::Succeeded => 'heroicon-o-check-badge',
+            self::Denied => 'heroicon-o-x-circle',
         };
     }
 }

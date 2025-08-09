@@ -9,4 +9,5 @@ return [
     'requires_confirmation' => 'Requiere confirmación',
     'requires_payment_method' => 'Requiere método de pago',
     'succeeded' => 'Completado',
+    'denied' => 'Denegado',
 ];

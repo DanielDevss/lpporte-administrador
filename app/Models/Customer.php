@@ -8,16 +8,18 @@ use Illuminate\Database\Eloquent\Model;
 class Customer extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = [
         'user_id',
         'suscription_id',
         'suscription_active',
         'reference_code',
+        'date_expired_suscription'
     ];
 
     protected $casts = [
         'suscription_active' => 'boolean',
+        'date_expired_suscription' => 'datetime',
     ];
 
     protected static function boot()
@@ -39,15 +41,18 @@ class Customer extends Model
         return $this->belongsTo(Suscription::class);
     }
 
-    public function orders() {
+    public function orders()
+    {
         return $this->hasMany(Order::class);
     }
 
-    public function addresses () {
+    public function addresses()
+    {
         return $this->hasMany(Address::class, 'customer_id');
     }
 
-    public function currentPlan () {
+    public function currentPlan()
+    {
         $cases = [
             1 => 'ninguno',
             2 => 'basico',

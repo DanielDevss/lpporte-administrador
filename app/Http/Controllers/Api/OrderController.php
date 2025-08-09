@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Enums\PaymentIntentStatusEnum;
+use App\Enums\OrderStatusEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderStoreRequest;
 use App\Models\Order;
@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
+    // LINK obtener ventas del usuario
+
     public function index(Request $request)
     {
         try {
@@ -51,8 +53,16 @@ class OrderController extends Controller
     }
 
     /**
-     * Guardar la venta y generar el Checkout de Stripe
+     * SECTION Generador del checkout
+     * -------------------------------------------------------
+     * Creamos el checkout con stripe y la orden en nuestra
+     * base de datos para tener el historial. 
+     * Almacenamos el checkout_id para poderlo usar en otro 
+     * momento para validar la compra.
      */
+
+    // LINK main
+
     public function store(OrderStoreRequest $request)
     {
         try {
@@ -60,6 +70,18 @@ class OrderController extends Controller
                 $folio = 'F_' . now()->format('ymdhis');
                 $user = $request->user();
                 $plan = $user->customer->currentPlan();
+                $addressId = $user
+                    ->customer
+                    ->addresses()
+                    ->where('main', true)
+                    ->first()?->id;
+                if (!$addressId) {
+                    Log::warning('El cliente ' . $user->customer->id . ', no tiene dirección principal.');
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Agrega un dirección a tu cuenta'
+                    ], 422);
+                }
 
                 // 1) Preparar line items y pivot map
                 $productsMap = [];
@@ -89,10 +111,10 @@ class OrderController extends Controller
                 $order = Order::create([
                     'folio' => $folio,
                     'customer_id' => $user->customer->id,
-                    // amount real lo ajustará el webhook; si viene amount_total lo usamos
                     'amount' => (int) ($session->amount_total ?? 0),
-                    'status' => 'open', // el estado real lo pondrá el webhook
+                    'status' => 'open',
                     'stripe_session_id' => $session->id,
+                    'address_id' => $addressId
                 ]);
 
                 // 4) Guardar relación productos / suscripción
@@ -113,84 +135,14 @@ class OrderController extends Controller
         } catch (\Throwable $e) {
             Log::error("Error al crear la orden: {$e->getMessage()}");
             return response()->json([
-                'code' => 500,
                 'message' => 'Ocurrió un error interno',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
 
-    /**
-     * Respaldo manual para confirmar estado (idealmente usa solo el webhook)
-     */
-    public function validateOrder(string $folio)
-    {
-        try {
-            $order = Order::where('folio', $folio)->first();
+    // LINK Crear checkout
 
-            if (!$order) {
-                Log::warning('No se encontró una orden con folio ' . $folio);
-                return response()->json([
-                    'message' => 'No se ha encontrado una orden con este número de folio',
-                ], 404);
-            }
-
-            if ($order->status === PaymentIntentStatusEnum::Succeeded->value) {
-                return response()->json(['message' => 'Esta orden ya no se puede modificar'], 409);
-            }
-
-            $stripe = new StripeService();
-            $session = $stripe->findSession($order->stripe_session_id);
-            $paymentIntent = $stripe->findPaymentIntent(
-                is_string($session?->payment_intent)
-                ? $session->payment_intent
-                : ($session?->payment_intent?->id ?? null)
-            );
-
-            if (!$paymentIntent) {
-                return response()->json([
-                    'message' => 'No se pudo obtener el PaymentIntent',
-                ], 400);
-            }
-
-            // Actualizar order con datos definitivos
-            $order->stripe_payment_id = $paymentIntent->id;
-            $order->status = $paymentIntent->status;
-            $order->stripe_payment_method = $paymentIntent->payment_method ?? null;
-
-            // Si la sesión trae amount_total, actualiza monto e impuesto
-            if (isset($session->amount_total)) {
-                $order->amount = (int) $session->amount_total;
-                $order->tax = (int) round($order->amount * 0.16);
-            }
-
-            // Descontar stock solo si succeeded y no se ha hecho antes
-            if ($paymentIntent->status === PaymentIntentStatusEnum::Succeeded->value && empty($order->sold_since)) {
-                foreach ($order->products as $product) {
-                    $qty = (int) ($product->pivot->quantity ?? 0);
-                    if ($qty > 0) {
-                        $product->decrement('stock', $qty);
-                    }
-                }
-                $order->sold_since = now();
-            }
-
-            $order->save();
-
-            return response()->json([
-                'message' => 'La compra se completó de forma correcta',
-                'redirect' => config('app.url') . '/' . $order->folio . '/download-ticket',
-            ]);
-        } catch (\Throwable $e) {
-            Log::error('Error al confirmar la compra con folio ' . $folio, ['error' => $e->getMessage()]);
-            return response()->json([
-                'message' => 'Ocurrió un error interno',
-            ], 500);
-        }
-    }
-
-    /**
-     * Genera la Checkout Session con identificadores para el webhook
-     */
     private function createCheckout(Request $request, string $folio)
     {
         $lineItems = [];
@@ -222,7 +174,7 @@ class OrderController extends Controller
 
         $stripe = new StripeService();
         $payload = [
-            'success_url' => config('app.store_url') . '/orden/' . $folio . '/compra-completa',
+            'success_url' => config('app.store_url') . '/orden/' . $folio . '/validacion',
             'cancel_url' => config('app.store_url') . '/orden/' . $folio . '/compra-cancelada',
             'line_items' => $lineItems,
             'mode' => 'payment',
@@ -246,4 +198,88 @@ class OrderController extends Controller
     {
         return array_sum(array_map(fn($p) => (int) ($p['quantity'] ?? 0), $products));
     }
+
+
+    // !SECTION
+
+    /**
+     * SECTION Validación de compra
+     * -------------------------------------------------------
+     * Verificamos si la compra se reflejo en Stripe y
+     * descontamos del inventario de productos o activamos
+     * la suscripcion del usuario
+     */
+
+    // LINK main
+
+    public function validateOrder(string $folio)
+    {
+        $order = Order::where('folio', $folio)
+            ->whereNotIn('status', [
+                OrderStatusEnum::Succeeded->value,
+                OrderStatusEnum::Canceled->value,
+                OrderStatusEnum::Denied->value,
+            ])
+            ->firstOrFail();
+
+        try {
+            $stripe = new StripeService();
+            $session = $stripe->findSession($order->stripe_session_id);
+            $sessionPaymentId = $session?->payment_intent;
+
+            if (!$session || !$sessionPaymentId) {
+                Log::warning('session o payment_intent no encontrado en orden con folio ' . $folio);
+                $order->status = OrderStatusEnum::Denied->value;
+                $order->save();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'El pago no se completo de forma correcta',
+                ], 402);
+            }
+
+            $paymentIntent = $stripe->findPaymentIntent($sessionPaymentId);
+            $order->status = $paymentIntent->status;
+            $order->save();
+
+            $response = $order->suscriptions()->exists()
+                ? $this->validateSuscription($order->suscriptions[0], $folio)
+                : $this->validateProducts($order->products, $folio);
+
+            return response()->json($response, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Ocurrio un error interno',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // LINK validación de productos
+
+    private function validateProducts($products = [], $folio): array
+    {
+        Log::info('Validando compra de productos para orden ' . $folio);
+        foreach ($products as $product) {
+            $product->stock -= $product->pivot->quantity;
+            $product->save();
+        }
+        return [
+            'success' => true,
+            'message' => 'Compra de productos validada',
+            'products' => $products
+        ];
+    }
+
+    // LINK validación suscripcion
+
+    private function validateSuscription($suscription, $folio): array
+    {
+        Log::info('Validando pago de suscripción con orden ' . $folio);
+        return [
+            'success' => true,
+            'message' => 'Pago de suscripción validado'
+        ];
+    }
+
+    // !SECTION
 }

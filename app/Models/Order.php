@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\PaymentIntentStatusEnum;
+use App\Enums\OrderStatusEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -11,6 +11,7 @@ class Order extends Model
 {
     protected $fillable = [
         'customer_id',
+        'address_id',
         'folio',
         'status',
         'amount',
@@ -21,11 +22,13 @@ class Order extends Model
         'stripe_payment_method'
     ];
 
-    public function getRouteKeyName() {
+    public function getRouteKeyName()
+    {
         return 'folio';
     }
 
-    protected static function boot () {
+    protected static function boot()
+    {
         parent::boot();
 
         static::creating(function ($model) {
@@ -33,16 +36,24 @@ class Order extends Model
         });
     }
 
-    public function customer () {
+    public function customer()
+    {
         return $this->belongsTo(Customer::class);
     }
 
-    public function products () {
+    public function address()
+    {
+        return $this->belongsTo(Address::class);
+    }
+
+    public function products()
+    {
         return $this->belongsToMany(Product::class, 'orders_has_products')
             ->withPivot(['plan', 'amount', 'quantity']);
     }
 
-    public function suscriptions () {
+    public function suscriptions()
+    {
         return $this->belongsToMany(Suscription::class, 'orders_has_suscriptions');
     }
 

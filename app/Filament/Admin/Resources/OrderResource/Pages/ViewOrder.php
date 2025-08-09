@@ -2,7 +2,7 @@
 
 namespace App\Filament\Admin\Resources\OrderResource\Pages;
 
-use App\Enums\PaymentIntentStatusEnum;
+use App\Enums\OrderStatusEnum;
 use App\Filament\Admin\Resources\OrderResource;
 use Filament\Actions;
 use Filament\Infolists\Components\RepeatableEntry;
@@ -31,10 +31,10 @@ class ViewOrder extends ViewRecord
                         TextEntry::make('status')
                             ->label('Estado')
                             ->formatStateUsing(
-                            fn ($state):string => PaymentIntentStatusEnum::from($state)->label()
+                            fn ($state):string => OrderStatusEnum::from($state)->label()
                             )
-                            ->color(fn($state):string =>PaymentIntentStatusEnum::from($state)->color())
-                            ->icon(fn($state):string =>PaymentIntentStatusEnum::from($state)->icon()),
+                            ->color(fn($state):string =>OrderStatusEnum::from($state)->color())
+                            ->icon(fn($state):string =>OrderStatusEnum::from($state)->icon()),
                         TextEntry::make('customer.user.name')
                             ->label('Cliente'),
                         TextEntry::make('created_at')

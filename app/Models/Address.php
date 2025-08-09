@@ -30,7 +30,13 @@ class Address extends Model
 
     // Relaciones
 
-    public function customer () {
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function customer()
+    {
         return $this->belongsTo(Customer::class, 'customer_id');
     }
 

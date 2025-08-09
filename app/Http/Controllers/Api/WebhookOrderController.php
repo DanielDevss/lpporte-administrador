@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Enums\PaymentIntentStatusEnum;
+use App\Enums\OrderStatusEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
@@ -65,7 +65,7 @@ class WebhookOrderController extends Controller
         }
 
         // Idempotencia: si ya está en succeeded, no tocar (evita descontar stock dos veces)
-        if ($order->status === PaymentIntentStatusEnum::Succeeded->value) {
+        if ($order->status === OrderStatusEnum::Succeeded->value) {
             return;
         }
 
@@ -89,7 +89,7 @@ class WebhookOrderController extends Controller
             $order->stripe_payment_method = $pi->payment_method ?? null;
 
             // Si succeeded => descuenta stock (una sola vez)
-            if ($pi->status === PaymentIntentStatusEnum::Succeeded->value) {
+            if ($pi->status === OrderStatusEnum::Succeeded->value) {
                 // Evita doble descuento si ya marcaste venta (usa sold_since como “bandera” si la tienes)
                 if (empty($order->sold_since)) {
                     foreach ($order->products as $product) {
@@ -133,7 +133,7 @@ class WebhookOrderController extends Controller
             return;
         }
 
-        if ($order->status === PaymentIntentStatusEnum::Succeeded->value) {
+        if ($order->status === OrderStatusEnum::Succeeded->value) {
             return;
         }
 
@@ -142,7 +142,7 @@ class WebhookOrderController extends Controller
             $order->status = $pi->status;
             $order->stripe_payment_method = $pi->payment_method ?? null;
 
-            if ($pi->status === PaymentIntentStatusEnum::Succeeded->value && empty($order->sold_since)) {
+            if ($pi->status === OrderStatusEnum::Succeeded->value && empty($order->sold_since)) {
                 foreach ($order->products as $product) {
                     $qty = (int) ($product->pivot->quantity ?? 0);
                     if ($qty > 0) {
