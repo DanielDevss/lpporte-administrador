@@ -14,7 +14,6 @@
         "laravel/tinker": "^2.10.1",
         "laravel/ui": "^4.6",
         "laraveles/spanish": "^1.5",
-        "saade/filament-laravel-log": "^3.0",
         "stripe/stripe-php": "^17.3"
     },
     "require-dev": {
