@@ -43,12 +43,12 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Estado')
                     ->badge()
-                    ->getStateUsing(fn ($record) => PaymentIntentStatusEnum::from($record->status)->label())
-                    ->color(fn ($record) => PaymentIntentStatusEnum::from($record->status)->color())
-                    ->icon(fn ($record) => PaymentIntentStatusEnum::from($record->status)->icon()),
+                    ->getStateUsing(fn($record) => PaymentIntentStatusEnum::from($record->status)->label())
+                    ->color(fn($record) => PaymentIntentStatusEnum::from($record->status)->color())
+                    ->icon(fn($record) => PaymentIntentStatusEnum::from($record->status)->icon()),
                 Tables\Columns\TextColumn::make('amount')
                     ->label('Monto')
-                    ->getStateUsing(fn ($record) => $record->amount / 100)
+                    ->getStateUsing(fn($record) => $record->amount / 100)
                     ->numeric()
                     ->money('MXN')
                     ->alignEnd()
@@ -60,8 +60,8 @@ class OrderResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('customer.reference_code')
                     ->label('No. Cliente')
-                    ->tooltip(fn ($record) => $record?->customer?->user?->name ?? "No encontrado")
-                    ->url(fn($record) => route('filament.admin.resources.customers.edit', $record))
+                    ->tooltip(fn($record) => $record?->customer?->user?->name ?? "No encontrado")
+                    ->url(fn($record) => route('filament.admin.resources.customers.edit', $record->customer))
                     ->icon('heroicon-o-user')
             ])
             ->filters([
