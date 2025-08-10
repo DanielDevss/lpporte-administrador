@@ -26,6 +26,7 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->id('admin')
+            ->renderHook('head.end', fn(): string => '<link rel="manifest" href="' . asset('manifest.json') . '">')
             ->path('/')
             ->favicon('favicon.png')
             ->colors([
