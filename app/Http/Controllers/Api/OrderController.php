@@ -242,7 +242,7 @@ class OrderController extends Controller
             $order->save();
 
             $response = $order->suscriptions()->exists()
-                ? $this->validateSuscription($order->suscriptions[0], $folio)
+                ? $this->validateSuscriptionAndActive($order)
                 : $this->validateProducts($order->products, $folio);
 
             return response()->json($response, 200);
@@ -272,12 +272,59 @@ class OrderController extends Controller
 
     // LINK validación suscripcion
 
-    private function validateSuscription($suscription, $folio): array
+    private function validateSuscriptionAndActive(Order $order): array
     {
-        Log::info('Validando pago de suscripción con orden ' . $folio);
+        Log::info('Validando pago de subscripción', ['folio' => $order->folio]);
+
+        // Validar solo si la orden esta succeeded
+        if ($order->status !== OrderStatusEnum::Succeeded->value) {
+            return [
+                'success' => false,
+                'message' => 'El pago aún no esta completado'
+            ];
+        }
+
+        // Evitar activar dos veces la misma orden
+        if (!empty($order->activated_at)) {
+            return [
+                'success' => true,
+                'message' => 'La suscripción ya había sido activada'
+            ];
+        }
+
+        $suscription = $order->suscriptions()->first();
+        $customer = $order->customer;
+
+        if (!$suscription || !$customer) {
+            Log::warning('Faltan datos para activar la suscripción', [
+                'folio' => $order->folio,
+                'has_suscription' => (bool) $suscription,
+                'has_customer' => (bool) $customer
+            ]);
+            return [
+                'success' => false,
+                'message' => 'No se pudo activar la suscripción, hay datos incompleto'
+            ];
+        }
+
+        $expiresAt = now()->addYear();
+
+        DB::transaction(function () use ($expiresAt, $suscription, $customer, $order) {
+            // Activamos la suscripcion
+            $customer->forceFill([
+                'suscription_active' => true,
+                'suscription_id' => $suscription->id,
+                'date_expired_suscription' => $expiresAt
+            ])->saveQuietly();
+            // Marcamos la orden como activada
+            $order->forceFill([
+                'activated_at' => now()
+            ])->saveQuietly();
+        });
+
         return [
             'success' => true,
-            'message' => 'Pago de suscripción validado'
+            'message' => 'La suscripción ' . $suscription->name . ', se activo de forma correcta'
         ];
     }
 

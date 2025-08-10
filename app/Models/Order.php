@@ -19,7 +19,12 @@ class Order extends Model
         'tax',
         'stripe_session_id',
         'stripe_payment_id',
-        'stripe_payment_method'
+        'stripe_payment_method',
+        'activated_at'
+    ];
+
+    protected $casts = [
+        'activated_at' => 'datetime'
     ];
 
     public function getRouteKeyName()
@@ -54,7 +59,10 @@ class Order extends Model
 
     public function suscriptions()
     {
-        return $this->belongsToMany(Suscription::class, 'orders_has_suscriptions');
+        return $this->belongsToMany(Suscription::class, 'orders_has_suscriptions')
+            ->withPivot([
+                'date_expired_suscription'
+            ]);
     }
 
 }

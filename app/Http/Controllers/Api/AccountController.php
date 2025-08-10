@@ -15,7 +15,7 @@ class AccountController extends Controller
     public function show(Request $request)
     {
         $user = $request->user();
-        
+
         if (!$user) {
             return response()->json([
                 'message' => 'Usuario no autenticado'
@@ -23,6 +23,8 @@ class AccountController extends Controller
         }
 
         $user->load('customer');
+
+        $suscriptionName = $user->customer?->suscription?->name ?? "Plan Gratis";
 
         return response()->json([
             'user' => [
@@ -32,13 +34,15 @@ class AccountController extends Controller
                 'referance_code' => $user->customer->reference_code,
                 'suscription_id' => $user->customer->suscription_id,
                 'suscription_active' => $user->customer->suscription_active,
+                'sucription_name' => $suscriptionName,
                 'created_at' => $user->created_at,
                 'updated_at' => $user->updated_at
             ]
         ]);
     }
 
-    public function update(AccountUpdateRequest $request) {
+    public function update(AccountUpdateRequest $request)
+    {
         try {
             $user = User::find($request->user()->id);
             $user->update([
@@ -56,26 +60,27 @@ class AccountController extends Controller
         }
     }
 
-    public function changePassword (PasswordUpdateRequest $request) {
+    public function changePassword(PasswordUpdateRequest $request)
+    {
         try {
             $user = $request->user();
-            
+
             // Verificar que la contraseña actual sea correcta
             if (!Hash::check($request->password, $user->password)) {
                 return response()->json([
                     'message' => 'La contraseña actual es incorrecta'
                 ], 422);
             }
-            
+
             // Actualizar la contraseña
             $user->update([
                 'password' => Hash::make($request->newPassword)
             ]);
-            
+
             return response()->json([
                 'message' => 'Contraseña actualizada correctamente'
             ]);
-            
+
         } catch (\Exception $e) {
             Log::error('Error al cambiar la contraseña del usuario ' . $request->user()->id, [$e->getMessage()]);
             return response()->json([

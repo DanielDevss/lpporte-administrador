@@ -30,17 +30,32 @@ class Suscription extends Model
     /**
      * Relaciones con tablas
      */
-    public function productPrices () {
+    public function productPrices()
+    {
         return $this->hasMany(ProductPrice::class);
+    }
+
+    public function orders()
+    {
+        return $this->belongsToMany(Order::class, 'order_has_suscriptions')
+            ->withPivot([
+                'date_expired_suscription'
+            ]);
+    }
+
+    public function customer()
+    {
+        return $this->hasMany(Customer::class, 'suscription_id');
     }
 
     /**
      * Operaciones boots
      */
 
-    public static function boot() {
+    public static function boot()
+    {
         parent::boot();
-        
+
         static::creating(function ($model) {
             // TODO: Crear stripe price y product id
             $stripe = new StripeService();
@@ -67,14 +82,14 @@ class Suscription extends Model
                     'currency' => config('services.stripe.currency'),
                     'product' => $model->stripe_product_id,
                 ]);
-                
+
                 $model->stripe_price_id = $stripePrice->id;
             }
-            
+
             // Si el nombre cambió, actualizar el producto en Stripe
             if ($model->isDirty('name')) {
                 $stripe = new StripeService();
-                
+
                 try {
                     $stripe->updateProduct([
                         'name' => $model->name,
@@ -88,12 +103,13 @@ class Suscription extends Model
 
     // Otras funciones
 
-    public function formatApiList () {
+    public function formatApiList()
+    {
         $attrs = $this->getAttributes()['attributes'];
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'amount'=> $this->amount / 100,
+            'amount' => $this->amount / 100,
             'benefits' => $this->benefits ?? [],
             'attributes' => $attrs ? json_decode($attrs, true) : []
         ];
