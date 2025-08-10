@@ -18,7 +18,7 @@ Route::post('/account', [AuthController::class, 'signUp']);
 
 // Rutas protegidas
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'active.suscription'])->group(function () {
 
     // Rutas de cuenta
 

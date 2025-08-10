@@ -3,18 +3,12 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\CustomerResource\Pages;
-use App\Filament\Admin\Resources\CustomerResource\RelationManagers;
 use App\Models\Customer;
-use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class CustomerResource extends Resource
 {
@@ -78,13 +72,19 @@ class CustomerResource extends Resource
                     ->label('Suscripción')
                     ->searchable()
                     ->icon('heroicon-o-cube')
-                    ->iconColor(fn ($record) => $record->suscription_active ? 'success' : 'danger')
+                    ->iconColor(fn($record) => $record->suscription_active ? 'success' : 'danger')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('date_expired_suscription')
+                    ->label('Expira el')
+                    ->dateTime('d/m/Y, h:i a')
+                    ->alignEnd()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Registrado el')
-                    ->dateTime('d/m/Y')
+                    ->dateTime('d/m/Y, h:i a')
                     ->alignEnd()
                     ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
             ])
             ->filters([
                 //
@@ -111,7 +111,8 @@ class CustomerResource extends Resource
     {
         return [
             'index' => Pages\ListCustomers::route('/'),
-            'create' => Pages\CreateCustomer::route('/create'), 
-            'edit' => Pages\EditCustomer::route('/{record}/edit'), ];
+            'create' => Pages\CreateCustomer::route('/create'),
+            'edit' => Pages\EditCustomer::route('/{record}/edit'),
+        ];
     }
 }

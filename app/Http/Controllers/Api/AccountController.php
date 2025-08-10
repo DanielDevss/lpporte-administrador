@@ -25,6 +25,7 @@ class AccountController extends Controller
         $user->load('customer');
 
         $suscriptionName = $user->customer?->suscription?->name ?? "Plan Gratis";
+        $addressMainId = $user->customer->addresses()->where('main', true)->first();
 
         return response()->json([
             'user' => [
@@ -35,6 +36,7 @@ class AccountController extends Controller
                 'suscription_id' => $user->customer->suscription_id,
                 'suscription_active' => $user->customer->suscription_active,
                 'sucription_name' => $suscriptionName,
+                'address_main_id' => $addressMainId ?? null,
                 'created_at' => $user->created_at,
                 'updated_at' => $user->updated_at
             ]
