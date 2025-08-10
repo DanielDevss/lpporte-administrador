@@ -3,20 +3,15 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\BrandResource\Pages;
-use App\Filament\Admin\Resources\BrandResource\RelationManagers;
 use App\Models\Brand;
-use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\ImageColumn;
-use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class BrandResource extends Resource
 {
@@ -38,6 +33,7 @@ class BrandResource extends Resource
                     ->label('Logotipo de la marca')
                     ->placeholder('Agrega un logotipo de la marca desde tu galería o arrastralo hasta aquí.')
                     ->image()
+                    ->maxSize(1024)
                     ->disk('public')
                     ->directory('brands')
                     ->required()
@@ -50,7 +46,7 @@ class BrandResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->columns([
                 TextColumn::make('name')->label('Marca')->searchable(),
-                ImageColumn::make('brand')->label('Logotipo'),
+                ImageColumn::make('brand')->label('Logotipo')->alignCenter(),
                 TextColumn::make('created_at')
                     ->label('Agregado el')
                     ->dateTime('d/m/Y')
